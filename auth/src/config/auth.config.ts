@@ -1,5 +1,6 @@
 export interface AuthConfig {
   dbUri: string;
+  dbUriUser: string;
   dbName: string;
   userName: string;
   password: string;
@@ -11,6 +12,7 @@ export interface AuthConfig {
 
 export const authConfig = {
   dbUri: 'mongodb://auth-db:27017',
+  dbUriUser: 'mongodb://authService:test123@auth-db:27017/authDb?authSource=authDb',
   dbName: 'authDb',
   userName: 'authService',
   password: 'test123',

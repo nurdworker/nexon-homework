@@ -1,6 +1,23 @@
 import { Injectable } from '@nestjs/common';
 import axios from 'axios';
 
+export interface SignUpInfo {
+  email: string;
+  password: string;
+  nickName: string;
+}
+
+export interface SignInInfo {
+  email: string;
+  password: string;
+}
+
+export interface AuthResponse {
+  accessToken: string;
+  refreshToken: string;
+  nickName: string;
+}
+
 @Injectable()
 export class AppService {
   getHello(): string {
@@ -12,16 +29,12 @@ export class AppService {
   }
 
   //auth
-  async signUp(signUpInfo: {
-    email: string;
-    password: string;
-    nickName: string;
-  }): Promise<any> {
+  async signUp(signUpInfo: SignUpInfo): Promise<AuthResponse> {
     const response = await axios.post('http://auth:4000/signup', signUpInfo);
     return response.data;
   }
 
-  async signIn(signInInfo: { email: string; password: string }): Promise<any> {
+  async signIn(signInInfo: SignInInfo): Promise<AuthResponse> {
     const response = await axios.post('http://auth:4000/signin', signInInfo);
     return response.data;
   }
@@ -45,6 +58,8 @@ export class AppService {
     console.log('hello from auth test kafka(api-gw service)');
     return response.data;
   }
+
+  //event
 
   async getHelloFromEvent(): Promise<any> {
     const response = await axios.get('http://event:5000/hello');

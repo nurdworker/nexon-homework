@@ -9,15 +9,16 @@ export class DatabaseService implements OnModuleDestroy {
   private db: Db;
 
   async connect(): Promise<Db> {
+    console.log('connect db')
     if (this.db) return this.db;
 
-    this.client = new MongoClient(authConfig.dbUri, {
+    this.client = new MongoClient(authConfig.dbUriUser, {
       maxPoolSize: authConfig.maxPoolSize,
       minPoolSize: authConfig.minPoolSize,
-      auth: {
-        username: authConfig.userName,
-        password: authConfig.password,
-      },
+      // auth: {
+      //   username: authConfig.userName,
+      //   password: authConfig.password,
+      // },
     });
 
     await this.client.connect();

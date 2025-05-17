@@ -1,5 +1,19 @@
 import { Controller, Get, Post, Body } from '@nestjs/common';
 import { AppService } from './app.service';
+import axios from 'axios';
+
+
+
+export interface SignUpInfo {
+  email: string;
+  password: string;
+  nickName: string;
+}
+
+export interface SignInInfo {
+  email: string;
+  password: string;
+}
 
 @Controller()
 export class AppController {
@@ -24,6 +38,16 @@ export class AppController {
     return this.appService.getHelloFromAuth();
   }
 
+  @Post('auth/signup')
+  async signUp(@Body() signUpInfo: SignUpInfo) {
+    return await this.appService.signUp(signUpInfo);
+  }
+
+  @Post('auth/signin')
+  async signIn(@Body() signInInfo: SignInInfo) {
+    return await this.appService.signIn(signInInfo);
+  }
+
   @Get('auth/test/get')
   getFromTestAuth(): Promise<any> {
     console.log('api-gw controller');
@@ -37,7 +61,7 @@ export class AppController {
   }
 
   // event test
-  @Get('eventHello')
+  @Get('event/hello')
   getHelloFromEvent(): Promise<any> {
     return this.appService.getHelloFromEvent();
   }
