@@ -29,6 +29,7 @@ services:
     volumes:
       - ./api-gw:/app
       - ./keys/api-gw:/app/keys
+      - /app/node_modules
     working_dir: /app
     command: npm run start:dev
     ports:
@@ -52,6 +53,7 @@ services:
     volumes:
       - ./auth:/app
       - ./keys/auth:/app/keys
+      - /app/node_modules
     working_dir: /app
     command: npm run start:dev
     # ports:
@@ -71,6 +73,7 @@ services:
       context: ./event
     volumes:
       - ./event:/app
+      - /app/node_modules
     working_dir: /app
     command: npm run start:dev
     # ports:
