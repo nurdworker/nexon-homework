@@ -11,15 +11,38 @@ export class AppService {
     return `Bye ${body.name}`;
   }
 
-  async getHelloFromAuth(): Promise<any> {
-    const response = await axios.get('http://auth:4000/hello');
+  //auth
+  async signUp(signUpInfo: {
+    email: string;
+    password: string;
+    nickName: string;
+  }): Promise<any> {
+    const response = await axios.post('http://auth:4000/signup', signUpInfo);
     return response.data;
   }
 
-  async callKafkaFromAuth(): Promise<any> {
-    const response = await axios.post('http://auth:4000/bye', {
-      name: 'muzzi',
-    });
+  async signIn(signInInfo: { email: string; password: string }): Promise<any> {
+    const response = await axios.post('http://auth:4000/signin', signInInfo);
+    return response.data;
+  }
+
+  // 얘는 auth쪽 app꺼꺼
+  async getHelloFromAuth(): Promise<any> {
+    const response = await axios.get('http://auth:4000/hello');
+    console.log('hello from auth test get');
+    return response.data;
+  }
+
+  // auth쪽쪽 kafka쪽 get api 테스트
+  async getFromTestAuth(): Promise<any> {
+    const response = await axios.get('http://auth:4000/test/get');
+    console.log('hello from auth test get(api-gw service)');
+    return response.data;
+  }
+
+  async getKafkaFromTestAuth(): Promise<any> {
+    const response = await axios.get('http://auth:4000/test/kafka');
+    console.log('hello from auth test kafka(api-gw service)');
     return response.data;
   }
 

@@ -16,11 +16,8 @@
     "noImplicitAny": false,
     "strictBindCallApply": false,
     "forceConsistentCasingInFileNames": false,
-    "noFallthroughCasesInSwitch": false,
-    "rootDir": "src"
+    "noFallthroughCasesInSwitch": false
   },
-  "include": ["src/**/*"],
-  "exclude": ["node_modules"],
   "watchOptions": {
     "watchFile": "fixedPollingInterval"
   }

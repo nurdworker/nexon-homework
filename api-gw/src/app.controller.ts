@@ -6,6 +6,8 @@ export class AppController {
   constructor(private readonly appService: AppService) {}
 
   // tester api들.
+
+  // api-gw test
   @Get('hello')
   getHello(): string {
     return this.appService.getHello();
@@ -16,18 +18,27 @@ export class AppController {
     return this.appService.postBye(body);
   }
 
-  @Get('authHello')
+  // auth test
+  @Get('auth/hello')
   getHelloFromAuth(): Promise<any> {
     return this.appService.getHelloFromAuth();
   }
 
+  @Get('auth/test/get')
+  getFromTestAuth(): Promise<any> {
+    console.log('api-gw controller');
+    return this.appService.getFromTestAuth();
+  }
+
+  @Get('auth/test/kafka')
+  getKafkaFromTestAuth(): Promise<any> {
+    console.log('kafka test');
+    return this.appService.getKafkaFromTestAuth();
+  }
+
+  // event test
   @Get('eventHello')
   getHelloFromEvent(): Promise<any> {
     return this.appService.getHelloFromEvent();
-  }
-
-  @Post('call-kafka-auth')
-  async callAuth(): Promise<any> {
-    return this.appService.callKafkaFromAuth();
   }
 }

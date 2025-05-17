@@ -6,7 +6,12 @@ export class TestController {
   constructor(private readonly testService: TestService) {}
 
   @Get('get')
-  getSuccess() {
-    return this.testService.getSuccessMessage();
+  testGet() {
+    return this.testService.testGet();
+  }
+
+  @Get('kafka')
+  testKafka() {
+    return this.testService.testKafka();
   }
 }
