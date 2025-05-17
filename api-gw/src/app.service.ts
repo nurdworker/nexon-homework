@@ -71,4 +71,10 @@ export class AppService {
     console.log('hello from event test get(api-gw service)');
     return response.data;
   }
+
+      async getOnlyForUserFromEvent(): Promise<any> {
+    const response = await axios.get('http://event:5000/test/role');
+    console.log('role test');
+    return response.data;
+  }
 }

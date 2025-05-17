@@ -2,6 +2,11 @@ import { Controller, Get, Post, Body } from '@nestjs/common';
 import { AppService } from './app.service';
 import axios from 'axios';
 
+import { UseGuards } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
+import { RolesGuard } from './auth/guards/roles.guard';
+import { Roles } from './auth/decorators/roles.decorator';
+
 
 
 export interface SignUpInfo {
@@ -68,5 +73,13 @@ export class AppController {
   @Get('event/test/get')
   getFromTestEvent(): Promise<any> {
     return this.appService.getFromTestEvent();
+  }
+
+
+  @Get('event/test/role')
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles('user')
+  getOnlyForUserFromEvent(): Promise<any> {
+    return this.appService.getOnlyForUserFromEvent();
   }
 }

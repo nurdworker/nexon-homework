@@ -7,4 +7,8 @@ export class TestService {
   testGet() {
     return { message: 'success api get from event' };
   }
+
+    testRole() {
+    return { message: 'success only user role api from event' };
+  }
 }

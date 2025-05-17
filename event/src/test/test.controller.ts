@@ -9,4 +9,9 @@ export class TestController {
   testGet() {
     return this.testService.testGet();
   }
+
+  @Get('role')
+  testRole() {
+    return this.testService.testRole();
+  }
 }
