@@ -1,0 +1,18 @@
+node_modules/
+dist/
+.env
+.DS_Store
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+# --- 서비스별 (api-gw, auth, event 등 모든 서브디렉토리 내에서 공통 적용) ---
+**/node_modules/
+**/dist/
+
+# --- 비밀 키 저장소 무시 ---
+keys/
+# --- IDE 설정 및 기타 환경파일 무시 ---
+.vscode/
+.idea/
+*.swp
+*.swo
