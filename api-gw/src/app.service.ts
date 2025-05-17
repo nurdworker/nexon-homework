@@ -39,7 +39,7 @@ export class AppService {
     return response.data;
   }
 
-  // 얘는 auth쪽 app꺼꺼
+  // 얘는 auth쪽 app꺼
   async getHelloFromAuth(): Promise<any> {
     const response = await axios.get('http://auth:4000/hello');
     console.log('hello from auth test get');
@@ -63,6 +63,12 @@ export class AppService {
 
   async getHelloFromEvent(): Promise<any> {
     const response = await axios.get('http://event:5000/hello');
+    return response.data;
+  }
+
+    async getFromTestEvent(): Promise<any> {
+    const response = await axios.get('http://event:5000/test/get');
+    console.log('hello from event test get(api-gw service)');
     return response.data;
   }
 }

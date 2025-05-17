@@ -50,7 +50,6 @@ export class AppController {
 
   @Get('auth/test/get')
   getFromTestAuth(): Promise<any> {
-    console.log('api-gw controller');
     return this.appService.getFromTestAuth();
   }
 
@@ -64,5 +63,10 @@ export class AppController {
   @Get('event/hello')
   getHelloFromEvent(): Promise<any> {
     return this.appService.getHelloFromEvent();
+  }
+
+  @Get('event/test/get')
+  getFromTestEvent(): Promise<any> {
+    return this.appService.getFromTestEvent();
   }
 }
