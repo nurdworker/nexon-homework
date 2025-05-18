@@ -1,4 +1,4 @@
-// src/mongo-init.service.ts
+// src/event-init.service.ts
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import { MongoClient } from 'mongodb';
 
@@ -10,6 +10,9 @@ export class MongoInitService implements OnModuleInit {
   private readonly targetDb = eventConfig.dbName;
   private readonly username = eventConfig.userName;
   private readonly password = eventConfig.password;
+  private readonly collectionsToInit = eventConfig.initCollectionLists;
+  private readonly managers = eventConfig.managerLists;
+  private readonly initItems = eventConfig.initItems;
 
   async onModuleInit() {
     const client = new MongoClient(this.rootUri);
@@ -18,7 +21,7 @@ export class MongoInitService implements OnModuleInit {
       await client.connect();
       const db = client.db(this.targetDb);
 
-      // db 관리 유저 존재 여부 확인. 얘로 계속 db접속할거임.
+      // 유저 존재 확인 후 없으면 생성
       const users = await db.command({ usersInfo: this.username });
       const userExists = users.users.length > 0;
 
@@ -31,21 +34,58 @@ export class MongoInitService implements OnModuleInit {
         });
       }
 
-      // 컬렉션 존재 여부 확인. 여기에 users랑 tokenLogs 컬렉션 생성하게 하자.
-      const collections = await db.listCollections({ name: 'test' }).toArray();
-      const collectionExists = collections.length > 0;
+      // 컬렉션 생성 + 인덱스 설정
+      for (const { name, indexFields } of this.collectionsToInit) {
+        const exists = await db.listCollections({ name }).toArray();
+        if (exists.length === 0) {
+          console.log(`event / 컬렉션을 생성했습니다!: ${name}`);
+          await db.createCollection(name);
+        }
 
-      if (!collectionExists) {
-        console.log('Creating collection...');
-        await db.createCollection('test');
-        // await db.collection('test').insertOne({ init: true });
+        const collection = db.collection(name);
+
+        for (const field of indexFields) {
+          const indexSpec = { [field]: 1 }; // 1: ascending
+          await collection.createIndex(indexSpec, { background: true });
+          console.log(`${name}컬렉션에 ${field} 인덱싱 생성!`);
+        }
       }
 
-      // 초기 관리자 유저 users에 생성해서 넣어주기.
+      // 매니저 유저 등록 (copiedUsers 컬렉션)
+      const copiedUsers = db.collection('copiedUsers');
+      for (const manager of this.managers) {
+        const exists = await copiedUsers.findOne({ email: manager.email });
+        if (exists) {
+          console.log(`매니저 유저가 이미 존재하네요~: ${manager.email}`);
+          continue;
+        }
 
-      console.log('event db 초기화 완료!');
+        const newUser = {
+          email: manager.email,
+          nickName: manager.nickName,
+          roles: manager.roles,
+          createdAt: manager.createdAt,
+        };
+
+        await copiedUsers.insertOne(newUser);
+        console.log(`매니저 등록했어요~!: ${manager.nickName}`);
+      }
+
+      const items = db.collection('items');
+      for (const itemName of this.initItems) {
+        const exists = await items.findOne({ name: itemName });
+        if (exists) {
+          console.log(`이미 존재하는 아이템이네요~: ${itemName}`);
+          continue;
+        }
+
+        await items.insertOne({ name: itemName, createdAt: new Date() });
+        console.log(`아이템 등록했어요~!: ${itemName}`);
+      }
+
+      console.log('event DB 초기화 완료!!');
     } catch (error) {
-      console.error('event db 초기화 중 에러 발생:', error);
+      console.error('event DB 초기화 에러:', error);
     } finally {
       await client.close();
     }

@@ -11,14 +11,13 @@ export class TestService {
 
   async testKafka() {
     const name = 'muzzi';
-
     const message = `test kafka ${name}`;
     await this.kafkaService.sendMessage('auth-events', {
       event: 'testkafka',
       name,
       message,
     });
-
+    console.log('test/ auth에서 테스트 카프카 메세지를 보냈어요!');
     return { message };
   }
 }

@@ -103,16 +103,14 @@ export class AppService {
     });
 
     // 토큰 로그 저장
-    await this.logToken(email, insertedUser._id, accessToken, 'access');
-    await this.logToken(email, insertedUser._id, refreshToken, 'refresh');
+    await this.logToken(insertedUser._id, accessToken, 'access');
+    await this.logToken(insertedUser._id, refreshToken, 'refresh');
 
     // Kafka 이벤트 보내기
-    await this.kafkaService.sendMessage('user-signup-events', {
-      event: 'user_signup',
+    await this.kafkaService.sendMessage('user.signup', {
       userId: insertedUser._id.toString(),
       email,
       nickName,
-      createdAt: insertedUser.createdAt.toISOString(),
     });
     return { nickName, accessToken, refreshToken };
   }
@@ -149,14 +147,13 @@ export class AppService {
     });
 
     // 로그 저장
-    await this.logToken(email, user._id, accessToken, 'access');
-    await this.logToken(email, user._id, refreshToken, 'refresh');
+    await this.logToken(user._id, accessToken, 'access');
+    await this.logToken(user._id, refreshToken, 'refresh');
 
     return { nickName: user.nickName, accessToken, refreshToken };
   }
 
   private async logToken(
-    email: string,
     userId: ObjectId,
     token: string,
     kind: 'access' | 'refresh',
@@ -169,7 +166,6 @@ export class AppService {
     const createdAt = new Date();
 
     const insertResult = await tokenLogs.insertOne({
-      email,
       userId,
       kind,
       hashedToken,
@@ -179,10 +175,9 @@ export class AppService {
     const logId = insertResult.insertedId;
 
     // Kafka에 메시지 전송
-    await this.kafkaService.sendMessage('token-log-events', {
+    await this.kafkaService.sendMessage('user.token', {
       logId,
       userId,
-      email,
       kind,
       createdAt,
     });

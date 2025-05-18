@@ -2,7 +2,7 @@ export interface ManagerUser {
   email: string;
   password: string;
   nickName: string;
-  roles: string[];
+  roles: ('user' | 'operator' | 'auditor' | 'admin')[];
   createdAt: Date;
 }
 
