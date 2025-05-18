@@ -5,6 +5,7 @@ import * as bcrypt from 'bcrypt';
 import { readFileSync } from 'fs';
 import { join } from 'path';
 import { DatabaseService } from './database/database.service';
+import { ObjectId } from 'mongodb';
 
 export interface AuthResponse {
   accessToken: string;
@@ -55,13 +56,9 @@ export class AppService {
     const now = new Date();
     const midnight = new Date();
 
-    // 자정 시간 설정: 다음날 0시
+    // 자정시간으로 토큰 만료시간 정하기기
     midnight.setHours(24, 0, 0, 0);
-
-    // 남은 시간(ms)
     const msUntilMidnight = midnight.getTime() - now.getTime();
-
-    // 초 단위로 변환
     const secondsUntilMidnight = Math.floor(msUntilMidnight / 1000);
     const { email, password, nickName } = signUpInfo;
 
@@ -89,6 +86,7 @@ export class AppService {
       createdAt: new Date(),
     };
     await usersCollection.insertOne(newUser);
+    const insertedUser = await usersCollection.findOne({ email });
 
     const payload: JwtPayload = {
       sub: email,
@@ -104,6 +102,18 @@ export class AppService {
       expiresIn: '14d',
     });
 
+    // 토큰 로그 저장
+    await this.logToken(email, insertedUser._id, accessToken, 'access');
+    await this.logToken(email, insertedUser._id, refreshToken, 'refresh');
+
+    // Kafka 이벤트 보내기
+    await this.kafkaService.sendMessage('user-signup-events', {
+      event: 'user_signup',
+      userId: insertedUser._id.toString(),
+      email,
+      nickName,
+      createdAt: insertedUser.createdAt.toISOString(),
+    });
     return { nickName, accessToken, refreshToken };
   }
 
@@ -138,6 +148,43 @@ export class AppService {
       expiresIn: '14d',
     });
 
+    // 로그 저장
+    await this.logToken(email, user._id, accessToken, 'access');
+    await this.logToken(email, user._id, refreshToken, 'refresh');
+
     return { nickName: user.nickName, accessToken, refreshToken };
+  }
+
+  private async logToken(
+    email: string,
+    userId: ObjectId,
+    token: string,
+    kind: 'access' | 'refresh',
+  ) {
+    const db = await this.databaseService.connect();
+    const tokenLogs = db.collection('tokenLogs');
+
+    const hashedToken = await bcrypt.hash(token, SALT_ROUNDS);
+
+    const createdAt = new Date();
+
+    const insertResult = await tokenLogs.insertOne({
+      email,
+      userId,
+      kind,
+      hashedToken,
+      createdAt,
+    });
+
+    const logId = insertResult.insertedId;
+
+    // Kafka에 메시지 전송
+    await this.kafkaService.sendMessage('token-log-events', {
+      logId,
+      userId,
+      email,
+      kind,
+      createdAt,
+    });
   }
 }

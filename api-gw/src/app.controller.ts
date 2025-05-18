@@ -75,7 +75,7 @@ export class AppController {
 
   @Get('event/test/role')
   @UseGuards(AuthGuard('jwt'), RolesGuard)
-  @Roles('admin')
+  @Roles('user')
   getOnlyForUserFromEvent(): Promise<any> {
     return this.appService.getOnlyForUserFromEvent();
   }
