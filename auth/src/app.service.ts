@@ -52,6 +52,17 @@ export class AppService {
   }
 
   async signUp(signUpInfo: SignUpInfo): Promise<AuthResponse> {
+    const now = new Date();
+    const midnight = new Date();
+
+    // 자정 시간 설정: 다음날 0시
+    midnight.setHours(24, 0, 0, 0);
+
+    // 남은 시간(ms)
+    const msUntilMidnight = midnight.getTime() - now.getTime();
+
+    // 초 단위로 변환
+    const secondsUntilMidnight = Math.floor(msUntilMidnight / 1000);
     const { email, password, nickName } = signUpInfo;
 
     // 닉네임 한글 2~6글자 검사
@@ -85,13 +96,23 @@ export class AppService {
       roles: ['user'],
     };
 
-    const accessToken = jwtService.sign(payload, { expiresIn: '1h' });
-    const refreshToken = jwtService.sign(payload, { expiresIn: '14d' });
+    const accessToken = jwtService.sign(payload, {
+      expiresIn: secondsUntilMidnight,
+    });
+
+    const refreshToken = jwtService.sign(payload, {
+      expiresIn: '14d',
+    });
 
     return { nickName, accessToken, refreshToken };
   }
 
   async signIn(signInInfo: SignInInfo): Promise<AuthResponse> {
+    const now = new Date();
+    const midnight = new Date();
+    midnight.setHours(24, 0, 0, 0);
+    const msUntilMidnight = midnight.getTime() - now.getTime();
+    const secondsUntilMidnight = Math.floor(msUntilMidnight / 1000);
     const { email, password } = signInInfo;
 
     const db = await this.databaseService.connect();
@@ -109,8 +130,13 @@ export class AppService {
       roles: user.roles || ['user'],
     };
 
-    const accessToken = jwtService.sign(payload, { expiresIn: '1h' });
-    const refreshToken = jwtService.sign(payload, { expiresIn: '14d' });
+    const accessToken = jwtService.sign(payload, {
+      expiresIn: secondsUntilMidnight,
+    });
+
+    const refreshToken = jwtService.sign(payload, {
+      expiresIn: '14d',
+    });
 
     return { nickName: user.nickName, accessToken, refreshToken };
   }

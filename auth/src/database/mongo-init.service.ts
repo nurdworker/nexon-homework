@@ -3,7 +3,7 @@ import { Injectable, OnModuleInit } from '@nestjs/common';
 import { MongoClient } from 'mongodb';
 
 import { authConfig } from '../config/auth.config';
-// import { hashPassword } from './staticData'; // 얘 유저 비번 해시화할떄 쓸거임.
+import { hashPassword } from '../utils/password.util';
 
 // console.log(authConfig.testSecret); // 출력잘됨
 
@@ -13,6 +13,7 @@ export class MongoInitService implements OnModuleInit {
   private readonly targetDb = authConfig.dbName;
   private readonly username = authConfig.userName;
   private readonly password = authConfig.password;
+  private readonly collectionsToInit = authConfig.initCollectionLists;
 
   async onModuleInit() {
     const client = new MongoClient(this.rootUri);
@@ -34,17 +35,37 @@ export class MongoInitService implements OnModuleInit {
         });
       }
 
-      // 컬렉션 존재 여부 확인. 여기에 users랑 tokenLogs 컬렉션 생성하게 하자.
-      const collections = await db.listCollections({ name: 'test' }).toArray();
-      const collectionExists = collections.length > 0;
-
-      if (!collectionExists) {
-        console.log('Creating collection...');
-        await db.createCollection('test');
-        // await db.collection('test').insertOne({ init: true });
+      // 컬렉션 초기화 (컬렉션 만들기, 관리자 계정 넣어주기기)
+      for (const name of this.collectionsToInit) {
+        const exists = await db.listCollections({ name }).toArray();
+        if (exists.length === 0) {
+          console.log(`Creating collection: ${name}`);
+          await db.createCollection(name);
+        }
       }
 
-      // 초기 관리자 유저 users에 생성해서 넣어주기.
+      // 매니저 계정 users에 넣어줌줌
+      const usersCollection = db.collection('users');
+
+      for (const manager of authConfig.managerLists) {
+        const exists = await usersCollection.findOne({ email: manager.email });
+        if (exists) {
+          console.log(`Manager user already exists: ${manager.email}`);
+          continue;
+        }
+
+        const hashedPassword = await hashPassword(manager.password);
+        const newUser = {
+          email: manager.email,
+          password: hashedPassword,
+          nickName: manager.nickName,
+          roles: manager.roles,
+          createdAt: manager.createdAt,
+        };
+
+        await usersCollection.insertOne(newUser);
+        console.log(`Manager user created: ${manager.email}`);
+      }
 
       console.log('auth db 초기화 완료!');
     } catch (error) {

@@ -4,7 +4,6 @@ import { MongoClient } from 'mongodb';
 
 import { eventConfig } from '../config/event.config';
 
-
 @Injectable()
 export class MongoInitService implements OnModuleInit {
   private readonly rootUri = eventConfig.dbUri;

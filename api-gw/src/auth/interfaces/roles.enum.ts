@@ -1,5 +1,7 @@
 export const RolesEnum = {
   User: 'user',
+  Operator: 'operator',
+  Auditor: 'auditor',
   Admin: 'admin',
 } as const;
 

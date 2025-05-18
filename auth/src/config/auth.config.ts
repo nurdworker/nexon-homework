@@ -1,3 +1,11 @@
+export interface ManagerUser {
+  email: string;
+  password: string;
+  nickName: string;
+  roles: string[];
+  createdAt: Date;
+}
+
 export interface AuthConfig {
   dbUri: string;
   dbUriUser: string;
@@ -7,12 +15,14 @@ export interface AuthConfig {
   maxPoolSize: number;
   minPoolSize: number;
   initCollectionLists: readonly string[];
+  managerLists: ManagerUser[];
   testSecret: string;
 }
 
 export const authConfig = {
   dbUri: 'mongodb://auth-db:27017',
-  dbUriUser: 'mongodb://authService:test123@auth-db:27017/authDb?authSource=authDb',
+  dbUriUser:
+    'mongodb://authService:test123@auth-db:27017/authDb?authSource=authDb',
   dbName: 'authDb',
   userName: 'authService',
   password: 'test123',
@@ -20,4 +30,34 @@ export const authConfig = {
   minPoolSize: 1,
   initCollectionLists: ['users', 'tokenLogs'] as const,
   testSecret: 'muzzi',
+  managerLists: [
+    {
+      email: 'bera@nexon.com',
+      password: 'test123', // 실제 mongo-init에서 해시 처리할 예정
+      nickName: '베라GM',
+      roles: ['user', 'operator'],
+      createdAt: new Date(),
+    },
+    {
+      email: 'croa@nexon.com',
+      password: 'test123',
+      nickName: '크로아GM',
+      roles: ['user', 'auditor'],
+      createdAt: new Date(),
+    },
+    {
+      email: 'union@nexon.com',
+      password: 'test123',
+      nickName: '유니온GM',
+      roles: ['user', 'operator', 'auditor'],
+      createdAt: new Date(),
+    },
+    {
+      email: 'elysium@nexon.com',
+      password: 'test123',
+      nickName: '엘리시움GM',
+      roles: ['user', 'admin'],
+      createdAt: new Date(),
+    },
+  ],
 } as const satisfies AuthConfig;

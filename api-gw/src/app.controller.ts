@@ -7,8 +7,6 @@ import { AuthGuard } from '@nestjs/passport';
 import { RolesGuard } from './auth/guards/roles.guard';
 import { Roles } from './auth/decorators/roles.decorator';
 
-
-
 export interface SignUpInfo {
   email: string;
   password: string;
@@ -75,10 +73,9 @@ export class AppController {
     return this.appService.getFromTestEvent();
   }
 
-
   @Get('event/test/role')
   @UseGuards(AuthGuard('jwt'), RolesGuard)
-  @Roles('user')
+  @Roles('admin')
   getOnlyForUserFromEvent(): Promise<any> {
     return this.appService.getOnlyForUserFromEvent();
   }
