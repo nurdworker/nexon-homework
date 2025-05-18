@@ -1,10 +1,15 @@
 import { Injectable, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
 import { Kafka, Consumer } from 'kafkajs';
+import { DatabaseService } from '../database/database.service';
+import { Db } from 'mongodb';
 
 @Injectable()
 export class KafkaConsumerService implements OnModuleInit, OnModuleDestroy {
   private kafka: Kafka;
   private consumer: Consumer;
+  private db: Db;
+
+  constructor(private readonly databaseService: DatabaseService) {}
 
   async onModuleInit() {
     this.kafka = new Kafka({
@@ -25,6 +30,9 @@ export class KafkaConsumerService implements OnModuleInit, OnModuleDestroy {
     });
     await this.consumer.subscribe({ topic: 'user.token', fromBeginning: true });
 
+    // DB 연결
+    this.db = await this.databaseService.connect();
+
     await this.consumer.run({
       eachMessage: async ({ topic, message }) => {
         const value = message.value?.toString();
@@ -38,7 +46,7 @@ export class KafkaConsumerService implements OnModuleInit, OnModuleDestroy {
             this.handleUserSignup(value);
             break;
           case 'user.token':
-            this.handleUserToken(value);
+            await this.handleUserToken(value);
             break;
           default:
             console.warn(`Unhandled topic: ${topic}`);
@@ -51,19 +59,55 @@ export class KafkaConsumerService implements OnModuleInit, OnModuleDestroy {
     await this.consumer.disconnect();
   }
 
-  // 카프카 컨슈머 핸들러들~
   private handleAuthEvents(message: string) {
     console.log('[kafka/event - auth-events] processing :', message);
     console.log('test/ event에서 테스트 카프카 메세지를 읽었어요!');
   }
 
-  private handleUserSignup(message: string) {
+  private async handleUserSignup(message: string) {
     console.log('[kafka/event - user.signup] processing :', message);
-    // TODO: 회원 가입 이벤트 처리 로직 작성
+
+    try {
+      const parsed = JSON.parse(message); // { userId, email, nickName }
+
+      const copiedUsers = this.db.collection('copiedUsers');
+
+      const user = {
+        userId: parsed.userId,
+        email: parsed.email,
+        nickName: parsed.nickName,
+        roles: ['user'],
+      };
+
+      await copiedUsers.insertOne(user);
+      console.log(`[user.signup] 사용자 등록 완료: ${parsed.userId}`);
+    } catch (err) {
+      console.error('[user.signup] 처리 중 오류 발생:', err);
+    }
   }
 
-  private handleUserToken(message: string) {
+  private async handleUserToken(message: string) {
     console.log('[user.token] 처리중:', message);
-    // TODO: 토큰 이벤트 처리 로직 작성
+
+    try {
+      const parsed = JSON.parse(message); // { logId, userId, kind, createdAt }
+
+      const copiedTokenLogs = this.db.collection('copiedTokenLogs');
+
+      // 이메일 조회 부분 제거
+
+      // 로그 삽입 (email 필드 제거)
+      const log = {
+        logId: parsed.logId,
+        userId: parsed.userId,
+        kind: parsed.kind,
+        createdAt: new Date(parsed.createdAt),
+      };
+
+      await copiedTokenLogs.insertOne(log);
+      console.log(`[user.token] 로그 저장 완료: ${parsed.logId}`);
+    } catch (err) {
+      console.error('[user.token] 처리 중 오류 발생:', err);
+    }
   }
 }

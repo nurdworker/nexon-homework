@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body } from '@nestjs/common';
+import { Controller, Get, Post, Body, Req } from '@nestjs/common';
 import { AppService } from './app.service';
 import axios from 'axios';
 
@@ -78,5 +78,12 @@ export class AppController {
   @Roles('user')
   getOnlyForUserFromEvent(): Promise<any> {
     return this.appService.getOnlyForUserFromEvent();
+  }
+
+  @Get('event/test/header')
+  @UseGuards(AuthGuard('jwt'))
+  @Roles('user')
+  getHeaderFromEvent(@Req() req: Request): Promise<any> {
+    return this.appService.getHeaderFromEvent(req);
   }
 }

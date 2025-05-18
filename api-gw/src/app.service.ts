@@ -66,15 +66,24 @@ export class AppService {
     return response.data;
   }
 
-    async getFromTestEvent(): Promise<any> {
+  async getFromTestEvent(): Promise<any> {
     const response = await axios.get('http://event:5000/test/get');
     console.log('hello from event test get(api-gw service)');
     return response.data;
   }
 
-      async getOnlyForUserFromEvent(): Promise<any> {
+  async getOnlyForUserFromEvent(): Promise<any> {
     const response = await axios.get('http://event:5000/test/role');
     console.log('role test');
+    return response.data;
+  }
+
+  async getHeaderFromEvent(req: Request): Promise<any> {
+    const response = await axios.get('http://event:5000/test/header', {
+      headers: {
+        Authorization: req.headers['authorization'] || '',
+      },
+    });
     return response.data;
   }
 }
