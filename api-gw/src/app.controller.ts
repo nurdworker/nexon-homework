@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Req } from '@nestjs/common';
+import { Controller, Get, Post, Body, Req, Headers } from '@nestjs/common';
 import { AppService } from './app.service';
 import axios from 'axios';
 
@@ -22,7 +22,32 @@ export interface SignInInfo {
 export class AppController {
   constructor(private readonly appService: AppService) {}
 
-  // tester api들.
+  // auth api
+  @Post('auth/signup')
+  async signUp(@Body() signUpInfo: SignUpInfo) {
+    return await this.appService.signUp(signUpInfo);
+  }
+
+  @Post('auth/signin')
+  async signIn(@Body() signInInfo: SignInInfo) {
+    return await this.appService.signIn(signInInfo);
+  }
+
+  // event api
+  //manager
+  @Get('event/manager/option')
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles('operator', 'admin')
+  getEventOptions(@Headers('authorization') authHeader: string) {
+    return this.appService.getEventOptions(authHeader);
+  }
+
+  @Post('event/manager')
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles('operator', 'admin')
+  createEvent(@Headers('authorization') authHeader: string, @Body() body: any) {
+    return this.appService.createEvent(authHeader, body);
+  }
 
   // api-gw test
   @Get('hello')
@@ -39,16 +64,6 @@ export class AppController {
   @Get('auth/hello')
   getHelloFromAuth(): Promise<any> {
     return this.appService.getHelloFromAuth();
-  }
-
-  @Post('auth/signup')
-  async signUp(@Body() signUpInfo: SignUpInfo) {
-    return await this.appService.signUp(signUpInfo);
-  }
-
-  @Post('auth/signin')
-  async signIn(@Body() signInInfo: SignInInfo) {
-    return await this.appService.signIn(signInInfo);
   }
 
   @Get('auth/test/get')
@@ -85,5 +100,10 @@ export class AppController {
   @Roles('user')
   getHeaderFromEvent(@Req() req: Request): Promise<any> {
     return this.appService.getHeaderFromEvent(req);
+  }
+
+  @Get('event/test/item')
+  getItemsFromTestEvent(): Promise<any> {
+    return this.appService.getItemsFromTestEvent();
   }
 }

@@ -14,8 +14,8 @@ export interface AuthResponse {
 }
 
 interface JwtPayload {
-  sub: string;
-  username: string;
+  email: string;
+  nickName: string;
   roles: string[];
 }
 
@@ -89,8 +89,8 @@ export class AppService {
     const insertedUser = await usersCollection.findOne({ email });
 
     const payload: JwtPayload = {
-      sub: email,
-      username: nickName,
+      email: email,
+      nickName: nickName,
       roles: ['user'],
     };
 
@@ -133,8 +133,8 @@ export class AppService {
     if (!isMatch) throw new Error('비밀번호가 일치하지 않습니다.');
 
     const payload: JwtPayload = {
-      sub: email,
-      username: user.nickName,
+      email: email,
+      nickName: user.nickName,
       roles: user.roles || ['user'],
     };
 

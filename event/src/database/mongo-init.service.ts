@@ -71,7 +71,7 @@ export class MongoInitService implements OnModuleInit {
         console.log(`매니저 등록했어요~!: ${manager.nickName}`);
       }
 
-      const items = db.collection('items');
+      const items = db.collection('copiedItems');
       for (const itemName of this.initItems) {
         const exists = await items.findOne({ name: itemName });
         if (exists) {

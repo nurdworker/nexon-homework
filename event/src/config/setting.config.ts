@@ -43,7 +43,7 @@ export const settingConfig = {
       indexFields: ['eventId', 'userId'],
     },
     {
-      name: 'items',
+      name: 'copiedItems',
       indexFields: [],
     },
     {

@@ -1,9 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import * as jwt from 'jsonwebtoken';
+import { DatabaseService } from '../database/database.service';
 
 @Injectable()
 export class TestService {
-  constructor() {}
+  constructor(private readonly databaseService: DatabaseService) {}
 
   testGet() {
     return { message: 'success api get from event' };
@@ -28,5 +29,11 @@ export class TestService {
       console.error('[event] JWT 디코딩 실패:', error);
       return { message: 'Invalid token' };
     }
+  }
+
+  async getAllItems() {
+    const db = this.databaseService.getDb(); // 몽고 커넥션 가져오기
+    const items = await db.collection('copiedItems').find().toArray();
+    return { message: 'success', items };
   }
 }

@@ -19,4 +19,9 @@ export class TestController {
   testHeader(@Headers('authorization') authHeader: string) {
     return this.testService.testHeader(authHeader);
   }
+
+  @Get('item')
+  async testItem() {
+    return this.testService.getAllItems();
+  }
 }
