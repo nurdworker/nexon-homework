@@ -1,4 +1,12 @@
-import { Controller, Get, Post, Body, Req, Headers } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Req,
+  Headers,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { AppService } from './app.service';
 import axios from 'axios';
 
@@ -33,8 +41,23 @@ export class AppController {
     return await this.appService.signIn(signInInfo);
   }
 
-  // event api
-  //manager
+  @Post('auth/refresh')
+  async refresh(@Headers('authorization') authHeader: string) {
+    if (!authHeader)
+      throw new UnauthorizedException('Refresh token이 필요합니다.');
+    const refreshToken = authHeader.replace('Bearer ', '').trim();
+    return await this.appService.refreshAccessToken(refreshToken);
+  }
+
+  @Post('auth/logout')
+  async logout(@Headers('authorization') authHeader: string) {
+    if (!authHeader)
+      throw new UnauthorizedException('Refresh token이 필요합니다.');
+    const refreshToken = authHeader.replace('Bearer ', '').trim();
+    return await this.appService.logout(refreshToken);
+  }
+
+  //event api / manager
   @Get('event/manager/option')
   @UseGuards(AuthGuard('jwt'), RolesGuard)
   @Roles('operator', 'admin')
@@ -48,6 +71,9 @@ export class AppController {
   createEvent(@Headers('authorization') authHeader: string, @Body() body: any) {
     return this.appService.createEvent(authHeader, body);
   }
+
+  // event api / public
+  // event api / user
 
   // api-gw test
   @Get('hello')

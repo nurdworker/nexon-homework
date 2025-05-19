@@ -39,6 +39,28 @@ export class AppService {
     return response.data;
   }
 
+  async refreshAccessToken(refreshToken: string): Promise<AuthResponse> {
+    const response = await axios.post(
+      'http://auth:4000/refresh',
+      {},
+      {
+        headers: { Authorization: `Bearer ${refreshToken}` },
+      },
+    );
+    return response.data;
+  }
+
+  async logout(refreshToken: string): Promise<{ message: string }> {
+    const response = await axios.post(
+      'http://auth:4000/logout',
+      {},
+      {
+        headers: { Authorization: `Bearer ${refreshToken}` },
+      },
+    );
+    return response.data;
+  }
+
   //여기에 로그아웃 추가
   //여기에 refresh 추가
 

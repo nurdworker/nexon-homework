@@ -1,4 +1,11 @@
-import { Controller, Get, Post, Body } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Headers,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { AppService, SignUpInfo, SignInInfo } from './app.service';
 
 @Controller()
@@ -18,5 +25,21 @@ export class AppController {
   @Post('signin')
   async signIn(@Body() signInInfo: SignInInfo) {
     return await this.appService.signIn(signInInfo);
+  }
+
+  @Post('refresh')
+  async refresh(@Headers('authorization') authHeader: string) {
+    if (!authHeader)
+      throw new UnauthorizedException('Refresh token이 필요합니다.');
+    const refreshToken = authHeader.replace('Bearer ', '').trim();
+    return await this.appService.refreshAccessToken(refreshToken);
+  }
+
+  @Post('logout')
+  async logout(@Headers('authorization') authHeader: string) {
+    if (!authHeader)
+      throw new UnauthorizedException('Refresh token이 필요합니다.');
+    const refreshToken = authHeader.replace('Bearer ', '').trim();
+    return await this.appService.logout(refreshToken);
   }
 }

@@ -18,14 +18,7 @@ export class ManagerService {
       throw new UnauthorizedException('유효한 토큰과 이메일이 필요합니다.');
     }
 
-    const userId = await this.getUserIdByEmail(payload.email);
-    if (!userId) {
-      throw new UnauthorizedException(
-        '해당 이메일 사용자가 존재하지 않습니다.',
-      );
-    }
-
-    const eventData = this.buildEventData(dto, userId);
+    const eventData = this.buildEventData(dto, payload.email);
 
     const savedEvent = await this.saveEvent(eventData);
 
@@ -35,13 +28,7 @@ export class ManagerService {
     };
   }
 
-  private async getUserIdByEmail(email: string): Promise<string | null> {
-    const db = this.databaseService.getDb();
-    const user = await db.collection('copiedUsers').findOne({ email });
-    return user ? user._id.toString() : null;
-  }
-
-  private buildEventData(dto: EventCreateDto, userId: string) {
+  private buildEventData(dto: EventCreateDto, email: string) {
     return {
       name: dto.name,
       description: dto.description || '',
@@ -51,7 +38,7 @@ export class ManagerService {
       conditions: dto.conditions,
       rewards: dto.rewards,
       createdAt: new Date(),
-      createdBy: userId,
+      createdBy: email,
     };
   }
 
