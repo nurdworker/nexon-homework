@@ -54,6 +54,10 @@ export const settingConfig = {
       name: 'copiedTokenLogs',
       indexFields: ['userId'],
     },
+    {
+      name: 'copiedSignLogs',
+      indexFields: ['userId'],
+    },
   ] as const,
   initItems: ['자쿰의 투구', '공 10노목', '덱 30가운'] as const,
   testSecret: 'muzzi',

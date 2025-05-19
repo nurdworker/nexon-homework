@@ -29,7 +29,7 @@ export class KafkaConsumerService implements OnModuleInit, OnModuleDestroy {
       fromBeginning: true,
     });
     await this.consumer.subscribe({ topic: 'user.token', fromBeginning: true });
-
+    await this.consumer.subscribe({ topic: 'user.sign', fromBeginning: true });
     // DB 연결
     this.db = await this.databaseService.connect();
 
@@ -47,6 +47,9 @@ export class KafkaConsumerService implements OnModuleInit, OnModuleDestroy {
             break;
           case 'user.token':
             await this.handleUserToken(value);
+            break;
+          case 'user.sign':
+            await this.handleUserSign(value);
             break;
           default:
             console.warn(`Unhandled topic: ${topic}`);
@@ -108,6 +111,27 @@ export class KafkaConsumerService implements OnModuleInit, OnModuleDestroy {
       console.log(`[user.token] 로그 저장 완료: ${parsed.logId}`);
     } catch (err) {
       console.error('[user.token] 처리 중 오류 발생:', err);
+    }
+  }
+
+  private async handleUserSign(message: string) {
+    console.log('[user.sign] 처리중:', message);
+
+    try {
+      const parsed = JSON.parse(message); // { userId, method, createdAt }
+
+      const copiedSignLogs = this.db.collection('copiedSignLogs');
+
+      const log = {
+        userId: parsed.userId,
+        method: parsed.method,
+        createdAt: new Date(parsed.createdAt),
+      };
+
+      await copiedSignLogs.insertOne(log);
+      console.log(`[user.sign] 로그 저장 완료: ${parsed.userId}`);
+    } catch (err) {
+      console.error('[user.sign] 처리 중 오류 발생:', err);
     }
   }
 }

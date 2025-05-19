@@ -64,11 +64,19 @@ export class AppService {
   async signUp(signUpInfo: SignUpInfo): Promise<AuthResponse> {
     const now = new Date();
     const midnight = new Date();
-
-    // 자정시간으로 토큰 만료시간 정하기기
     midnight.setHours(24, 0, 0, 0);
+    const THIRTY_MINUTES = 30 * 60 * 1000;
     const msUntilMidnight = midnight.getTime() - now.getTime();
-    const secondsUntilMidnight = Math.floor(msUntilMidnight / 1000);
+    // const secondsUntilMidnight = Math.floor(msUntilMidnight / 1000);
+
+    // 현재 시간이 자정 30분 이내면 토큰 만료를 자정으로, 아니면 30분 후로 설정
+    let expiresInSeconds: number;
+    if (msUntilMidnight <= THIRTY_MINUTES) {
+      expiresInSeconds = Math.floor(msUntilMidnight / 1000);
+    } else {
+      expiresInSeconds = 30 * 60; // 30분
+    }
+
     const { email, password, nickName } = signUpInfo;
 
     // 닉네임 한글 2~6글자 검사
@@ -104,32 +112,130 @@ export class AppService {
     };
 
     const accessToken = jwtService.sign(payload, {
-      expiresIn: secondsUntilMidnight,
+      expiresIn: expiresInSeconds,
     });
 
     const refreshToken = jwtService.sign(payload, {
       expiresIn: '14d',
     });
 
-    // 토큰 로그 저장
-    await this.logToken(insertedUser._id, accessToken, 'access');
-    await this.logToken(insertedUser._id, refreshToken, 'refresh');
+    // // 토큰 로그 저장
+    // await this.logToken(insertedUser._id, accessToken, 'access');
+    // await this.logToken(insertedUser._id, refreshToken, 'refresh');
 
-    // Kafka 이벤트 보내기
-    await this.kafkaService.sendMessage('user.signup', {
-      userId: insertedUser._id.toString(),
-      email,
-      nickName,
-    });
+    // // Kafka 이벤트 보내기(유저 만들어진 기념념)
+    // await this.kafkaService.sendMessage('user.signup', {
+    //   userId: insertedUser._id.toString(),
+    //   email,
+    //   nickName,
+    // });
+
+    // // Kafka 이벤트 보내기(유저 로그인으로 처리)
+    // await this.kafkaService.sendMessage('user.sign', {
+    //   userId: insertedUser._id.toString(),
+    //   method: 'signIn',
+    //   createdAt: new Date(),
+    // });
+
+    await Promise.all([
+      this.logToken(insertedUser._id, accessToken, 'access'),
+      this.logToken(insertedUser._id, refreshToken, 'refresh'),
+      this.kafkaService.sendMessage('user.signup', {
+        userId: insertedUser._id.toString(),
+        email,
+        nickName,
+      }),
+      this.kafkaService.sendMessage('user.sign', {
+        userId: insertedUser._id.toString(),
+        method: 'signIn',
+        createdAt: new Date(),
+      }),
+      this.saveSignLog(insertedUser._id.toString(), 'signIn'),
+    ]);
     return { nickName, accessToken, refreshToken };
   }
+
+  //   async signIn(signInInfo: SignInInfo): Promise<AuthResponse> {
+  //     const now = new Date();
+  //     const midnight = new Date();
+  //     midnight.setHours(24, 0, 0, 0);
+  //     const msUntilMidnight = midnight.getTime() - now.getTime();
+  //     const halfHourMs = 30 * 60 * 1000; // 30분 밀리초
+  //     // const secondsUntilMidnight = Math.floor(msUntilMidnight / 1000);
+
+  //     let expiresInSeconds: number;
+  //     if (msUntilMidnight <= halfHourMs) {
+  //   // 자정까지 30분 이내면, 만료시간 자정으로 설정
+  //   expiresInSeconds = Math.floor(msUntilMidnight / 1000);
+  // } else {
+  //   // 아니면 일반적으로 30분 만료
+  //   expiresInSeconds = 30 * 60;
+  // }
+  //     const { email, password } = signInInfo;
+
+  //     const db = await this.databaseService.connect();
+  //     const usersCollection = db.collection('users');
+
+  //     const user = await usersCollection.findOne({ email });
+  //     if (!user) throw new Error('존재하지 않는 사용자입니다.');
+
+  //     const isMatch = await bcrypt.compare(password, user.password);
+  //     if (!isMatch) throw new Error('비밀번호가 일치하지 않습니다.');
+
+  //     const payload: JwtPayload = {
+  //       email: email,
+  //       nickName: user.nickName,
+  //       roles: user.roles || ['user'],
+  //     };
+
+  //     const accessToken = jwtService.sign(payload, {
+  //       expiresIn: secondsUntilMidnight,
+  //     });
+
+  //     const refreshToken = jwtService.sign(payload, {
+  //       expiresIn: '14d',
+  //     });
+
+  //     // // 로그 저장
+  //     // await this.logToken(user._id, accessToken, 'access');
+  //     // await this.logToken(user._id, refreshToken, 'refresh');
+
+  //     // // Kafka 이벤트 전송
+  //     // await this.kafkaService.sendMessage('user.sign', {
+  //     //   userId: user._id.toString(),
+  //     //   method: 'signIn',
+  //     //   createdAt: new Date(),
+  //     // });
+
+  //     await Promise.all([
+  //       this.logToken(user._id, accessToken, 'access'),
+  //       this.logToken(user._id, refreshToken, 'refresh'),
+  //       this.kafkaService.sendMessage('user.sign', {
+  //         userId: user._id.toString(),
+  //         method: 'signIn',
+  //         createdAt: new Date(),
+  //       }),
+  //     ]);
+
+  //     return { nickName: user.nickName, accessToken, refreshToken };
+  //   }
 
   async signIn(signInInfo: SignInInfo): Promise<AuthResponse> {
     const now = new Date();
     const midnight = new Date();
     midnight.setHours(24, 0, 0, 0);
+
     const msUntilMidnight = midnight.getTime() - now.getTime();
-    const secondsUntilMidnight = Math.floor(msUntilMidnight / 1000);
+    const halfHourMs = 30 * 60 * 1000;
+
+    let expiresInSeconds: number;
+
+    if (msUntilMidnight <= halfHourMs) {
+      expiresInSeconds = Math.floor(msUntilMidnight / 1000);
+    } else {
+      expiresInSeconds = 30 * 60; // 30분
+    }
+
     const { email, password } = signInInfo;
 
     const db = await this.databaseService.connect();
@@ -148,16 +254,23 @@ export class AppService {
     };
 
     const accessToken = jwtService.sign(payload, {
-      expiresIn: secondsUntilMidnight,
+      expiresIn: expiresInSeconds,
     });
 
     const refreshToken = jwtService.sign(payload, {
       expiresIn: '14d',
     });
 
-    // 로그 저장
-    await this.logToken(user._id, accessToken, 'access');
-    await this.logToken(user._id, refreshToken, 'refresh');
+    await Promise.all([
+      this.logToken(user._id, accessToken, 'access'),
+      this.logToken(user._id, refreshToken, 'refresh'),
+      this.kafkaService.sendMessage('user.sign', {
+        userId: user._id.toString(),
+        method: 'signIn',
+        createdAt: new Date(),
+      }),
+      this.saveSignLog(user._id.toString(), 'signIn'),
+    ]);
 
     return { nickName: user.nickName, accessToken, refreshToken };
   }
@@ -168,8 +281,7 @@ export class AppService {
     const db = await this.databaseService.connect();
     const tokenLogs = db.collection('tokenLogs');
 
-    // 1. refresh 토큰 로그에서 유효한 토큰인지 확인 (DB에 해시된 토큰으로 저장되어 있음)
-    // bcrypt로 해시 비교가 비용이 있으므로, 최근 유효한 토큰만 조회하거나 인덱스 사용 권장
+    // 1. refresh 토큰 로그에서 유효한 토큰인지 확인
     const logs = await tokenLogs.find({ kind: 'refresh' }).toArray();
 
     let isValidToken = false;
@@ -233,12 +345,26 @@ export class AppService {
     // bcrypt 비교해서 해당 refresh 토큰 해시 로그를 삭제
     const logs = await tokenLogs.find({ kind: 'refresh' }).toArray();
 
+    let userIdToSend: string | null = null;
+
     for (const log of logs) {
       const match = await bcrypt.compare(refreshToken, log.hashedToken);
       if (match) {
         await tokenLogs.deleteOne({ _id: log._id });
+        userIdToSend = log.userId?.toString() || null;
         break;
       }
+    }
+
+    if (userIdToSend) {
+      await Promise.all([
+        this.kafkaService.sendMessage('user.sign', {
+          userId: userIdToSend,
+          method: 'signOut',
+          createdAt: new Date(),
+        }),
+        this.saveSignLog(userIdToSend, 'signOut'),
+      ]);
     }
 
     return { message: '로그아웃 되었습니다.' };
@@ -271,6 +397,17 @@ export class AppService {
       userId,
       kind,
       createdAt,
+    });
+  }
+
+  private async saveSignLog(userId: string, method: string) {
+    const db = await this.databaseService.connect();
+    const signLogs = db.collection('signLogs');
+
+    await signLogs.insertOne({
+      userId,
+      method,
+      createdAt: new Date(),
     });
   }
 }

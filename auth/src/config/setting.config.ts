@@ -28,7 +28,7 @@ export const settingConfig = {
   password: 'test123',
   maxPoolSize: 10,
   minPoolSize: 1,
-  initCollectionLists: ['users', 'tokenLogs'] as const,
+  initCollectionLists: ['users', 'tokenLogs', 'signLogs'] as const,
   testSecret: 'muzzi',
   managerLists: [
     {
