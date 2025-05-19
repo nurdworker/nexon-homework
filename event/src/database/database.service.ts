@@ -1,7 +1,7 @@
 // src/database/database.service.ts
 import { Injectable, OnModuleDestroy } from '@nestjs/common';
 import { MongoClient, Db } from 'mongodb';
-import { eventConfig } from '../config/event.config';
+import { settingConfig } from '../config/setting.config';
 
 @Injectable()
 export class DatabaseService implements OnModuleDestroy {
@@ -9,20 +9,20 @@ export class DatabaseService implements OnModuleDestroy {
   private db: Db;
 
   async connect(): Promise<Db> {
-    console.log('connect db')
+    console.log('connect db');
     if (this.db) return this.db;
 
-    this.client = new MongoClient(eventConfig.dbUriUser, {
-      maxPoolSize: eventConfig.maxPoolSize,
-      minPoolSize: eventConfig.minPoolSize,
+    this.client = new MongoClient(settingConfig.dbUriUser, {
+      maxPoolSize: settingConfig.maxPoolSize,
+      minPoolSize: settingConfig.minPoolSize,
       // event: {
-      //   username: eventConfig.userName,
-      //   password: eventConfig.password,
+      //   username: settingConfig.userName,
+      //   password: settingConfig.password,
       // },
     });
 
     await this.client.connect();
-    this.db = this.client.db(eventConfig.dbName);
+    this.db = this.client.db(settingConfig.dbName);
     return this.db;
   }
 

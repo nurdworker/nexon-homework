@@ -2,17 +2,17 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import { MongoClient } from 'mongodb';
 
-import { eventConfig } from '../config/event.config';
+import { settingConfig } from '../config/setting.config';
 
 @Injectable()
 export class MongoInitService implements OnModuleInit {
-  private readonly rootUri = eventConfig.dbUri;
-  private readonly targetDb = eventConfig.dbName;
-  private readonly username = eventConfig.userName;
-  private readonly password = eventConfig.password;
-  private readonly collectionsToInit = eventConfig.initCollectionLists;
-  private readonly managers = eventConfig.managerLists;
-  private readonly initItems = eventConfig.initItems;
+  private readonly rootUri = settingConfig.dbUri;
+  private readonly targetDb = settingConfig.dbName;
+  private readonly username = settingConfig.userName;
+  private readonly password = settingConfig.password;
+  private readonly collectionsToInit = settingConfig.initCollectionLists;
+  private readonly managers = settingConfig.managerLists;
+  private readonly initItems = settingConfig.initItems;
 
   async onModuleInit() {
     const client = new MongoClient(this.rootUri);

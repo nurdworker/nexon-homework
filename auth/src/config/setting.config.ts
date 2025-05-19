@@ -6,7 +6,7 @@ export interface ManagerUser {
   createdAt: Date;
 }
 
-export interface AuthConfig {
+export interface SettingConfig {
   dbUri: string;
   dbUriUser: string;
   dbName: string;
@@ -19,7 +19,7 @@ export interface AuthConfig {
   testSecret: string;
 }
 
-export const authConfig = {
+export const settingConfig = {
   dbUri: 'mongodb://auth-db:27017',
   dbUriUser:
     'mongodb://authService:test123@auth-db:27017/authDb?authSource=authDb',
@@ -60,4 +60,4 @@ export const authConfig = {
       createdAt: new Date(),
     },
   ],
-} as const satisfies AuthConfig;
+} as const satisfies SettingConfig;

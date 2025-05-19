@@ -2,18 +2,18 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import { MongoClient } from 'mongodb';
 
-import { authConfig } from '../config/auth.config';
+import { settingConfig } from '../config/setting.config';
 import { hashPassword } from '../utils/password.util';
 
-// console.log(authConfig.testSecret); // 출력잘됨
+// console.log(settingConfig.testSecret); // 출력잘됨
 
 @Injectable()
 export class MongoInitService implements OnModuleInit {
-  private readonly rootUri = authConfig.dbUri;
-  private readonly targetDb = authConfig.dbName;
-  private readonly username = authConfig.userName;
-  private readonly password = authConfig.password;
-  private readonly collectionsToInit = authConfig.initCollectionLists;
+  private readonly rootUri = settingConfig.dbUri;
+  private readonly targetDb = settingConfig.dbName;
+  private readonly username = settingConfig.userName;
+  private readonly password = settingConfig.password;
+  private readonly collectionsToInit = settingConfig.initCollectionLists;
 
   async onModuleInit() {
     const client = new MongoClient(this.rootUri);
@@ -47,7 +47,7 @@ export class MongoInitService implements OnModuleInit {
       // 매니저 계정 users에 넣어줌줌
       const usersCollection = db.collection('users');
 
-      for (const manager of authConfig.managerLists) {
+      for (const manager of settingConfig.managerLists) {
         const exists = await usersCollection.findOne({ email: manager.email });
         if (exists) {
           console.log(`Manager user already exists: ${manager.email}`);

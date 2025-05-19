@@ -10,7 +10,7 @@ export interface CollectionIndexConfig {
   indexFields: readonly string[];
 }
 
-export interface EventConfig {
+export interface SettingConfig {
   dbUri: string;
   dbUriUser: string;
   dbName: string;
@@ -19,12 +19,12 @@ export interface EventConfig {
   maxPoolSize: number;
   minPoolSize: number;
   initCollectionLists: readonly CollectionIndexConfig[];
-  initItems: readonly string[]; // ✅ 추가된 부분
+  initItems: readonly string[];
   testSecret: string;
   managerLists: readonly Manager[];
 }
 
-export const eventConfig = {
+export const settingConfig = {
   dbUri: 'mongodb://event-db:27017',
   dbUriUser:
     'mongodb://eventService:test123@event-db:27017/eventDb?authSource=eventDb',
@@ -55,7 +55,7 @@ export const eventConfig = {
       indexFields: ['userId'],
     },
   ] as const,
-  initItems: ['자쿰의 투구', '공 10노목', '덱 30가운'] as const, // ✅ 추가된 부분
+  initItems: ['자쿰의 투구', '공 10노목', '덱 30가운'] as const,
   testSecret: 'muzzi',
   managerLists: [
     {
@@ -83,4 +83,4 @@ export const eventConfig = {
       createdAt: new Date(),
     },
   ],
-} as const satisfies EventConfig;
+} as const satisfies SettingConfig;
