@@ -43,7 +43,7 @@ git clone https://github.com/nurdworker/nexon-homework
 cd nexon-homework/
 ```
 
-1. RSA키 방식으로 jwt를 구현했기 때문에 키 생성 커맨드를 꼭 입력해주세요! 안 하시면 서비스내 api 테스트가 대부분 안되실겁니다 ㅠㅠ
+2. RSA키 방식으로 jwt를 구현했기 때문에 키 생성 커맨드를 꼭 입력해주세요! 안 하시면 서비스내 api 테스트가 대부분 안되실겁니다 ㅠㅠ
 
 ```bash
 # ~/nexon-homework/ 경로에서 해당 커맨드를 쳐주세요! RSA키가 생성되어야 합니다.
@@ -55,7 +55,7 @@ chmod +x createKeys.sh
 
 ![image.png](image.png)
 
-1. 이후 도커컴포즈 커맨드를 입력하시면 빌드 및 가동이 시작됩니다. (제 컴퓨터 기준 약 5분)
+3. 이후 도커컴포즈 커맨드를 입력하시면 빌드 및 가동이 시작됩니다. (제 컴퓨터 기준 약 5분)
 
 ```bash
 docker compose up --build
