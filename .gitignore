@@ -9,8 +9,12 @@ yarn-error.log*
 **/node_modules/
 **/dist/
 
+# --- 빌드 캐시 무시 ---
+*.tsbuildinfo
+
 # --- 비밀 키 저장소 무시 ---
 keys/
+
 # --- IDE 설정 및 기타 환경파일 무시 ---
 .vscode/
 .idea/
