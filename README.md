@@ -103,7 +103,7 @@ docker compose up --build
 
 ### Role-Based Access Control (RBAC)
 
-api-gw → services라는 구조와 api-gw에서 유저를 검증해라? 하자 마자 떠오른게 AWS의 cognito서비스였습니다. 예전에 한번 다뤄봤거든요. 그래서 ai랑 구글링으로 개념들을 정리해가는데
+api-gw → services라는 구조와 api-gw에서 유저를 검증해라? 하자 마자 떠오른게 AWS의 cognito서비스였습니다. 예전에 한번 다뤄봤거든요.
 
 그리고 역할이라고 하니까 전 AWS IAM유저가 생각났어요. 역할이 중복으로 적용가능하기에 코드에서도 역할을 array로 넣어놨습니다.
 
