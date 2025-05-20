@@ -59,6 +59,17 @@ export class AppController {
     return await this.appService.logout(refreshToken);
   }
 
+  // event api / public
+  @Get('event/lists')
+  getEvents() {
+    return this.appService.getEventsLists();
+  }
+
+  @Get('event/list/:eventId')
+  getEvent(@Param('eventId') eventId: string) {
+    return this.appService.getEventById(eventId);
+  }
+
   //event api / manager
   @Get('event/manager/option')
   @UseGuards(AuthGuard('jwt'), RolesGuard)
@@ -110,16 +121,6 @@ export class AppController {
     res.send(buffer);
   }
 
-  // event api / public
-  @Get('event/lists')
-  getEvents() {
-    return this.appService.getEventsLists();
-  }
-
-  @Get('event/list/:eventId')
-  getEvent(@Param('eventId') eventId: string) {
-    return this.appService.getEventById(eventId);
-  }
   // event api / user
   @Post('event/user/request')
   @UseGuards(AuthGuard('jwt'), RolesGuard)
