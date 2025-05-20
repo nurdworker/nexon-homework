@@ -6,9 +6,11 @@ import {
   Req,
   Headers,
   UnauthorizedException,
+  Param,
+  Res,
 } from '@nestjs/common';
 import { AppService } from './app.service';
-import axios from 'axios';
+import { Response } from 'express';
 
 import { UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
@@ -72,8 +74,69 @@ export class AppController {
     return this.appService.createEvent(authHeader, body);
   }
 
+  @Post('event/manager/toggle-active')
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles('operator', 'admin')
+  toggleActive(
+    @Headers('authorization') authHeader: string,
+    @Body() body: { eventId: string },
+  ) {
+    return this.appService.toggleEventActive(authHeader, body);
+  }
+
+  @Get('event/manager/requests')
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles('operator', 'admin', 'auditor')
+  getEventRequests() {
+    return this.appService.getEventRequests();
+  }
+
+  @Get('event/manager/requests/export')
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles('operator', 'admin', 'auditor')
+  async exportEventRequests(@Res() res: Response) {
+    const buffer = await this.appService.exportEventRequests();
+
+    res.setHeader(
+      'Content-Type',
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    );
+    res.setHeader(
+      'Content-Disposition',
+      'attachment; filename="event_requests.xlsx"',
+    );
+    res.setHeader('Content-Length', buffer.length.toString());
+
+    res.send(buffer);
+  }
+
   // event api / public
+  @Get('event/lists')
+  getEvents() {
+    return this.appService.getEventsLists();
+  }
+
+  @Get('event/list/:eventId')
+  getEvent(@Param('eventId') eventId: string) {
+    return this.appService.getEventById(eventId);
+  }
   // event api / user
+  @Post('event/user/request')
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles('user')
+  requestRewards(
+    @Headers('authorization') authHeader: string,
+    @Body() body: { eventId: string },
+  ) {
+    return this.appService.requestRewards(authHeader, body);
+  }
+
+  @Get('event/user/request/me')
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles('user')
+  getMyRequests(@Headers('authorization') authHeader: string) {
+    return this.appService.getMyRequests(authHeader);
+  }
 
   // api-gw test
   @Get('hello')

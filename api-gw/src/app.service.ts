@@ -61,28 +61,89 @@ export class AppService {
     return response.data;
   }
 
-  //여기에 로그아웃 추가
-  //여기에 refresh 추가
-
   //event - public
+  async getEventsLists(): Promise<any> {
+    return this.handleRequest('GET', 'http://event:5000/lists');
+  }
+
+  async getEventById(eventId: string): Promise<any> {
+    return this.handleRequest('GET', `http://event:5000/list/${eventId}`);
+  }
+
   //event - manager
+
   async getEventOptions(authHeader: string): Promise<any> {
-    const response = await axios.get(
+    return this.handleRequest(
+      'GET',
       'http://event:5000/event/manager/options',
       {
-        headers: { authorization: authHeader },
+        authorization: authHeader,
       },
     );
-    return response.data;
   }
 
   async createEvent(authHeader: string, body: any): Promise<any> {
-    const response = await axios.post('http://event:5000/event/manager', body, {
-      headers: { authorization: authHeader },
+    return this.handleRequest('POST', 'http://event:5000/event/manager', body, {
+      authorization: authHeader,
     });
-    return response.data;
   }
+
+  async toggleEventActive(
+    authHeader: string,
+    body: { eventId: string },
+  ): Promise<any> {
+    return this.handleRequest(
+      'POST',
+      'http://event:5000/event/manager/toggle-active',
+      body,
+      {
+        authorization: authHeader,
+      },
+    );
+  }
+
   //event - user
+  async requestRewards(
+    authHeader: string,
+    body: { eventId: string },
+  ): Promise<any> {
+    return this.handleRequest(
+      'POST',
+      'http://event:5000/event/user/request',
+      body,
+      {
+        authorization: authHeader,
+      },
+    );
+  }
+
+  async getMyRequests(authHeader: string): Promise<any> {
+    return this.handleRequest(
+      'GET',
+      'http://event:5000/event/user/request/me',
+      {
+        authorization: authHeader,
+      },
+    );
+  }
+
+  async getEventRequests(): Promise<any> {
+    return this.handleRequest(
+      'GET',
+      'http://event:5000/event/manager/requests',
+    );
+  }
+
+  async exportEventRequests(): Promise<Buffer> {
+    const response = await axios.get(
+      'http://event:5000/event/manager/requests/export',
+      {
+        responseType: 'arraybuffer',
+      },
+    );
+    const buffer = Buffer.from(response.data);
+    return buffer;
+  }
 
   // 얘는 auth쪽 test api들들
   async getHelloFromAuth(): Promise<any> {
@@ -133,5 +194,33 @@ export class AppService {
   async getItemsFromTestEvent(): Promise<any> {
     const response = await axios.get('http://event:5000/test/item');
     return response.data;
+  }
+
+  private async handleRequest<T>(
+    method: 'GET' | 'POST',
+    url: string,
+    dataOrHeaders?: any,
+    headers?: Record<string, string>,
+  ): Promise<T> {
+    try {
+      if (method === 'GET') {
+        const response = await axios.get<T>(url, {
+          headers: dataOrHeaders, // GET에서는 dataOrHeaders가 headers 역할
+        });
+        return response.data;
+      } else if (method === 'POST') {
+        const response = await axios.post<T>(url, dataOrHeaders, {
+          headers,
+        });
+        return response.data;
+      }
+      throw new Error(`Unsupported method: ${method}`);
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response) {
+        console.error(`API Error from ${method} ${url}:`, error.response.data);
+        throw new Error(JSON.stringify(error.response.data));
+      }
+      throw error;
+    }
   }
 }

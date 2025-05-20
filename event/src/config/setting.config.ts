@@ -52,11 +52,11 @@ export const settingConfig = {
     },
     {
       name: 'copiedTokenLogs',
-      indexFields: ['userId'],
+      indexFields: ['userId', 'createdAt'],
     },
     {
       name: 'copiedSignLogs',
-      indexFields: ['userId'],
+      indexFields: ['userId', 'createdAt'],
     },
   ] as const,
   initItems: ['자쿰의 투구', '공 10노목', '덱 30가운'] as const,
